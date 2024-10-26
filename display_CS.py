@@ -9,9 +9,10 @@ def generate_CS(df, best_model, var_param):
     
     if var_param == 'o': y_name = 'Ω'
     elif var_param == 'g': y_name = 'γ'
-    
+    elif var_param == 'f': y_name = 'F'
+
     Y1, Y2 = [], []
-    p = df['p'].iloc[0]
+    p = 0.6037735849059057
 
     for t in tlist:
         Y1.append(df.loc[(df['t'] == t) & (df['p'] == p), 'conc'].values[0])
@@ -26,8 +27,8 @@ def generate_CS(df, best_model, var_param):
     plt.plot(tlist, Y2, label='MLP')
 
     plt.xlabel('t')
-    plt.ylabel('Concurrence/Negativity')
-    plt.title(f'Analytical vs. MLP @ {y_name} = {p}')
+    plt.ylabel('Concurrence')
+    plt.title(f'Analytical vs. MLP @ {y_name} = {p:.1f}')
     plt.legend()
 
     plt.show()

@@ -5,12 +5,11 @@ import pandas as pd
 import optuna
 import time
 from display_graph import generate_graph
-from display_CS import generate_CS
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_percentage_error
 from sklearn.neural_network import MLPRegressor
 from sklearn.model_selection import train_test_split
 
-def build_mlp(shuffled, train_amt, var_param, graph_type):
+def build_mlp(shuffled, train_amt, var_param):
     # read the input
     df = pd.read_csv('input.csv')
     totalSamples = df.shape[0]
@@ -19,14 +18,14 @@ def build_mlp(shuffled, train_amt, var_param, graph_type):
     all_conc = df['conc']
 
     if shuffled:
-        X_train, X_test, y_train, y_test = train_test_split(all_input, all_conc, train_size = train_amt*0.01, random_state=42)
+        X_train, X_test, y_train, y_test = \
+            train_test_split(
+                all_input, 
+                all_conc, 
+                train_size = train_amt*0.01, 
+                random_state=42
+            )
     else:
-        # # train 15% from start, 15% from end
-        # trainingSize = int(totalSamples * train_amt)//2
-        # X_train = pd.concat([all_input.iloc[:trainingSize], all_input.iloc[-trainingSize:]])
-        # y_train = pd.concat([all_conc.iloc[:trainingSize], all_conc.iloc[-trainingSize:]])
-        # X_test = all_input.iloc[trainingSize:-trainingSize]
-        # y_test = all_conc.iloc[trainingSize:-trainingSize]
         range1 = (all_input['t'] > 0) & (all_input['t'] <= train_amt)
         range2 = (all_input['t'] > tlist[-1]-train_amt) & (all_input['t'] <= tlist[-1])
         X_train = pd.concat([all_input[range1], all_input[range2]])
@@ -66,7 +65,4 @@ def build_mlp(shuffled, train_amt, var_param, graph_type):
     MSE: {mean_squared_error(y_test, y_pred)}
     MAPE: {mean_absolute_percentage_error(np.array(y_test), np.array(y_pred))}''')
 
-    if graph_type == 'g':
-        generate_graph(df, X_train, best_model, var_param)
-    else:
-        generate_CS(df, best_model, var_param)
+    generate_graph(df, X_train, best_model, var_param)
