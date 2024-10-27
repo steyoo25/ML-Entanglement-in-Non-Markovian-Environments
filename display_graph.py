@@ -83,26 +83,26 @@ def generate_graph(df, X_train, best_model, var_param):
     ax.plot_surface(X, Y, Z3)
     plt.title('Training')
 
-    # CROSS SECTION GRAPH
-    p = 0.6
+    # # CROSS SECTION GRAPH
+    # p = 0.6
 
-    plt.figure()
-    Y1, Y2 = [], []
-    for t in tlist:
-        Y1.append(df.loc[(df['t'] == t) & (df['p'] == p), 'conc'].values[0])
-        Y2.append(best_model.predict(pd.DataFrame({'t': [t], 'p': [p]}))[0])
+    # plt.figure()
+    # Y1, Y2 = [], []
+    # for t in tlist:
+    #     Y1.append(df.loc[(df['t'] == t) & (df['p'] == p), 'conc'].values[0])
+    #     Y2.append(best_model.predict(pd.DataFrame({'t': [t], 'p': [p]}))[0])
 
-    Y1, Y2 = map(np.array, (Y1, Y2))
+    # Y1, Y2 = map(np.array, (Y1, Y2))
 
-    Y1[Y1 < 0] = 0
-    Y2[Y2 < 0] = 0  # all negative values represent ESD.
+    # Y1[Y1 < 0] = 0
+    # Y2[Y2 < 0] = 0  # all negative values represent ESD.
 
-    plt.plot(tlist, Y1, label='Analytical')
-    plt.plot(tlist, Y2, label='MLP')
+    # plt.plot(tlist, Y1, label='Analytical')
+    # plt.plot(tlist, Y2, label='MLP')
 
-    plt.xlabel('t')
-    plt.ylabel('Concurrence')
-    plt.title(f'Analytical vs. MLP @ {name} = {p:.1f}')
-    plt.legend()
+    # plt.xlabel('t')
+    # plt.ylabel('Concurrence')
+    # plt.title(f'Analytical vs. MLP @ {name} = {p:.1f}')
+    # plt.legend()
 
     plt.show()

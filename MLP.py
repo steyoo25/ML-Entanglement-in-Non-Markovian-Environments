@@ -5,7 +5,7 @@ import pandas as pd
 import optuna
 import time
 from display_graph import generate_graph
-from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_percentage_error
+from sklearn.metrics import r2_score, mean_absolute_percentage_error, root_mean_squared_error
 from sklearn.neural_network import MLPRegressor
 from sklearn.model_selection import train_test_split
 
@@ -13,6 +13,7 @@ def build_mlp(shuffled, train_amt, var_param):
     # read the input
     df = pd.read_csv('input.csv')
     totalSamples = df.shape[0]
+    num_features = df.shape[1]
     all_input = df[['t','p']]
     tlist = df['t'].unique() # list of time vals
     all_conc = df['conc']
@@ -37,13 +38,14 @@ def build_mlp(shuffled, train_amt, var_param):
     start_time = time.time()
 
     # hyperparameter tuning with OPTUNA
+    # BEFORE: neurons per layer - 1 to 500, total layers - 1 to 10, max_iter = 100
     def objective(trial):
-        layer_sizes = tuple(trial.suggest_int(f'n_units_layer{i}', 1, 500) for i in range(trial.suggest_int('n_layers', 1, 10)))
-        mlp = MLPRegressor(hidden_layer_sizes=layer_sizes, max_iter=100, random_state=42)
+        layer_sizes = [trial.suggest_int(f'n_units_layer{i}', 500, 700) for i in range(trial.suggest_int('n_layers', 1, 3))]
+        mlp = MLPRegressor(hidden_layer_sizes=layer_sizes, max_iter=500, random_state=42)
         mlp.fit(X_train, y_train)
         mape = mean_absolute_percentage_error(np.array(y_train), np.array(mlp.predict(X_train)))
-        mse = mean_squared_error(np.array(y_train), np.array(mlp.predict(X_train)))
-        return mse/totalSamples + 100*(mape/totalSamples)
+        rmse = root_mean_squared_error(np.array(y_train), np.array(mlp.predict(X_train)))
+        return rmse/totalSamples + 100*(mape/totalSamples)
     study = optuna.create_study(direction='minimize')
     study.optimize(objective, n_trials=10)
 
@@ -54,7 +56,7 @@ def build_mlp(shuffled, train_amt, var_param):
     for i in range(layer_size):
         best_params_tuple.append(best_params[f'n_units_layer{i}'])
     best_params_tuple = tuple(best_params_tuple)
-    best_model = MLPRegressor(best_params_tuple, max_iter = 100, random_state=42)
+    best_model = MLPRegressor(best_params_tuple, max_iter = 500, random_state=42)
     best_model.fit(X_train, y_train)
     y_pred = best_model.predict(X_test)
 
@@ -62,7 +64,7 @@ def build_mlp(shuffled, train_amt, var_param):
     print(f'Time (training only): {time.time() - start_time:.3f} seconds')
     print(f'''Scoring Metrics:
     R^2:{r2_score(y_test, y_pred)}
-    MSE: {mean_squared_error(y_test, y_pred)}
+    MSE: {root_mean_squared_error(y_test, y_pred)}
     MAPE: {mean_absolute_percentage_error(np.array(y_test), np.array(y_pred))}''')
 
     generate_graph(df, X_train, best_model, var_param)
